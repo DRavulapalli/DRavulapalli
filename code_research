@@ -1,0 +1,297 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # SOMs for Beginners
+# The following notebook contains an elementary SOM for learning purposes. 
+# The data: 
+# * c0_gen_nomag.hdf5
+# * c1_gen_nomag.hdf5 
+# * c2_gen_nomag.hdf5
+# * c3_gen_nomag.hdf5 
+# 
+# The above contain the magnitudes (mags) for different tomographic redshift bins. 
+# 
+# Path: 
+# 
+# `/Users/diana/Research/DESI-SOM/data/Other` (Change to be the path where you are storing your data. It's good book-keeping.) 
+#     
+# Other things to note: 
+# * Each cell in the SOM (for the photo-z callibration) represents a galaxy phenotype. 
+# * Tomographic bins refer to populations of galaxies with similar properties (like, colors, Spectral Energy Distributionss), rather than galaxies with similar spectroscopic redshifts. 
+
+# In[44]:
+
+
+# import functions
+# please install all of the modules below! :) 
+
+import sys
+sys.path.append('/opt/anaconda3/lib/python3.8/site-packages') # minisom location
+                                                              # might need to change 
+                                                              # if minisom can't be found
+
+from astropy.table import Table, vstack
+
+import h5py 
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+from minisom import MiniSom
+
+import numpy as np
+
+from unittest import mock
+
+import matplotlib.colors as colors
+
+
+# In[45]:
+
+
+# data path 
+path = '/Users/darshika/Desktop/Research'
+
+c0_gen = h5py.File(f'{path}/c0_gen_nomag.hdf5', 'r')
+c1_gen = h5py.File(f'{path}/c1_gen_nomag.hdf5', 'r')
+c2_gen = h5py.File(f'{path}/c2_gen_nomag.hdf5', 'r')
+c3_gen = h5py.File(f'{path}/c3_gen_nomag.hdf5', 'r')
+
+
+# In[46]:
+
+
+# convert into np arrays for ease of access 
+c0_gen_rows = np.array(c0_gen['catalog'][:])
+c1_gen_rows = np.array(c1_gen['catalog'][:])
+c2_gen_rows = np.array(c2_gen['catalog'][:])
+c3_gen_rows = np.array(c3_gen['catalog'][:])
+
+
+# In[47]:
+
+
+# convert to astropy Table for even easier access...
+c0_gen = Table(rows=c0_gen_rows, names=('ztrue', 'mu', 'gamma_1', 'gamma_2', 'ra', 'dec', 'mag', 'z_fib_mag', 'r_fib_mag', 'random_2', 'g_1', 'g_2', 'e_1', 'e_2', 'z', 'w'))
+c1_gen = Table(rows=c1_gen_rows, names=('ztrue', 'mu', 'gamma_1', 'gamma_2', 'ra', 'dec', 'mag', 'z_fib_mag', 'r_fib_mag', 'random_2', 'g_1', 'g_2', 'e_1', 'e_2', 'z', 'w'))
+c2_gen = Table(rows=c2_gen_rows, names=('ztrue', 'mu', 'gamma_1', 'gamma_2', 'ra', 'dec', 'mag', 'z_fib_mag', 'r_fib_mag', 'random_2', 'g_1', 'g_2', 'e_1', 'e_2', 'z', 'w'))
+c3_gen = Table(rows=c3_gen_rows, names=('ztrue', 'mu', 'gamma_1', 'gamma_2', 'ra', 'dec', 'mag', 'z_fib_mag', 'r_fib_mag', 'random_2', 'g_1', 'g_2', 'e_1', 'e_2', 'z', 'w'))
+
+
+# In[48]:
+
+
+# vertically stack datasets 
+c_gen = vstack([c0_gen, c1_gen, c2_gen, c3_gen])
+
+
+# In[49]:
+
+
+#c_gen_data = c_gen['mag'] # magnitudes
+#print (c_gen_data)
+c_gen_data = c_gen['mag']
+print(c_gen_data)
+
+
+# In[50]:
+
+
+a = c_gen_data[0] - c_gen_data[1]
+b = c_gen_data[1] - c_gen_data[2]
+c = c_gen_data[2] - c_gen_data[3]
+d = c_gen_data[3] - c_gen_data[4]
+e = c_gen_data[4] - c_gen_data[5]
+f = c_gen_data[5] - c_gen_data[6]
+color_gen_data = [a,b,c,d,e,f]
+colors_data = np.asarray(color_gen_data)
+print (c_gen_data[0])
+print(c_gen_data[1])
+
+
+# In[51]:
+
+
+import numpy as np
+
+c_gen_colors = np.zeros((298658,6))
+for i, obj in enumerate(c_gen_data):
+    for j , color in enumerate(c_gen_colors[i]):
+        c_gen_colors[i][j]= (c_gen_data[i][0]-c_gen_data[0][j])
+        
+print(c_gen_colors[0])
+print(c_gen_colors)
+
+
+# In[52]:
+
+
+#a = c_gen_data[0] - c_gen_data[1]
+#b = c_gen_data[1] - c_gen_data[2]
+#c = c_gen_data[2] - c_gen_data[3]
+#d = c_gen_data[3] - c_gen_data[4]
+#e = c_gen_data[4] - c_gen_data[5]
+#f = c_gen_data[5] - c_gen_data[6]
+#color_gen_data = [a,b,c,d,e,f]
+#colors_data = np.asarray(color_gen_data)
+#print (colors_data[0])
+
+c_gen_colors = np.zeros((298658,6))
+for i, obj in enumerate(c_gen_data):
+    for j , color in enumerate(c_gen_colors[i]):
+        c_gen_colors[i][j]= (c_gen_data[i][0]-c_gen_data[0][j])
+        
+#a = (c_gen_colors[:][0]) # colors from first galaxy, want first color from all the galaxies
+#b = (c_gen_colors[:][1])
+#c = (c_gen_colors[:][2])
+#d = (c_gen_colors[:][3])
+#e = (c_gen_colors[:][4])
+#f = (c_gen_colors[:][5])
+#color_gen_data = [a,b,c,d,e,f]
+colors_data = np.asarray(c_gen_colors)
+
+# data normalization
+color_data = np.array((colors_data - np.mean(colors_data, axis=0)) / np.std(colors_data, axis=0))
+print(color_data)
+
+# initialization and training
+n_neurons = 25 #when increasing the neuron number, you increase the size of the graph 
+m_neurons = 25
+
+som = MiniSom(n_neurons, m_neurons, color_data.shape[1], sigma=1.5, learning_rate=.5, #increasing learning rate means learns slower
+              neighborhood_function='gaussian', random_seed=0)
+som.pca_weights_init(color_data) # initializes weights to span the first two principal components
+som.train(color_data, 100000, verbose=True)
+
+plt.figure(figsize=(8, 8))
+
+plt.pcolor(som.distance_map(), cmap='viridis')  # plotting the distance map as background
+
+plt.colorbar()
+
+cbar.set_label('colors')
+
+plt.show()
+
+
+# In[55]:
+
+
+# data normalization
+c_gen_data = np.array((c_gen_data - np.mean(c_gen_data, axis=0)) / np.std(c_gen_data, axis=0))
+
+# initialization and training
+n_neurons = 20
+m_neurons = 20
+som = MiniSom(n_neurons, m_neurons, c_gen_data.shape[1], sigma=1.5, learning_rate=.5, 
+              #neighborhood_function='gaussian', random_seed=0)
+som.pca_weights_init(c_gen_data) # initializes weights to span the first two principal components #som.train(c_gen_data, 10000, verbose=True)
+
+
+# In[56]:
+
+
+plt.figure(figsize=(8, 8))
+
+plt.pcolor(som.distance_map(), cmap='viridis')  # plotting the distance map as background
+
+plt.colorbar()
+
+plt.show()
+
+# what is being shown here? 
+
+
+# In[57]:
+
+
+win_map = som.win_map(colors_data, return_indices = True) # returns a dictionary with all indices of the elements 
+                                                         # that have been mapped to the position (i,j) 
+print(win_map)
+
+
+# In[61]:
+
+
+# create empty "map" to hold mean z true 
+mean_z_map = np.zeros(som.distance_map().shape)
+#print(mean_z_map)
+
+for iy, ix in np.ndindex(mean_z_map.shape): 
+    #print(mean_z_map[iy, ix]) 
+    mean_z_map[iy, ix] = np.mean(c_gen_data[win_map[(iy, ix)]]['ztrue'])
+
+
+# In[62]:
+
+
+plt.figure(figsize=(7, 7))
+
+plt.pcolor(mean_z_map, cmap='viridis')  # plotting the mean true zs in each tomographic bin
+
+cbar = plt.colorbar()
+cbar.set_label('mean true z')  #grid with diff colors
+
+# what is being shown here? (in a physical sense :)
+
+
+# In[ ]:
+
+
+# now, rather than using the magnitudes, repeat the same procedure using the galaxy 
+# "colors" rather than the magnitudes!
+
+
+# In[ ]:
+
+
+# create empty "map" to hold mean z true 
+median_z_map = np.zeros(som.distance_map().shape)
+#print(mean_z_map)
+
+for iy, ix in np.ndindex(mean_z_map.shape): 
+    #print(mean_z_map[iy, ix]) 
+    median_z_map[iy, ix] = np.median(c_gen_data[win_map[(iy, ix)]]['ztrue'])
+plt.figure(figsize=(7, 7))
+
+plt.pcolor(median_z_map, cmap='viridis')  # plotting the mean true zs in each tomographic bin
+
+cbar = plt.colorbar()
+cbar.set_label('median true z') 
+
+
+# In[ ]:
+
+
+win_map[0,1]
+len(win_map[0,1])
+print(mean_z_map.shape)
+
+
+# In[ ]:
+
+
+abundance_z_map = np.zeros(som.distance_map().shape)#empty map
+for iy, ix in np.ndindex(abundance_z_map.shape): 
+    #print(mean_z_map[iy, ix]) 
+    abundance_z_map[iy, ix] = len(c_gen_data[win_map[(iy, ix)]])
+plt.figure(figsize=(7, 7))
+
+plt.pcolor(abundance_z_map, cmap='viridis', norm=colors.LogNorm())  # plotting the mean true zs in each tomographic bin
+
+cbar = plt.colorbar()
+cbar.set_label('abundance') 
+
+
+# In[ ]:
+
+
+win_map[19,0]
+
+
+# In[ ]:
+
+
+# real data
+#regenerate colors with same procedures and everything else
+
